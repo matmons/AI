@@ -129,6 +129,8 @@ for i in L:
     new_S = results(ST,move)
     ST = copy.deepcopy(new_S)
 
+#  under construction solution function   
+     
 #def sol(s):
 #    S=[[s[3][0][0],s[3][0][2],s[3][0][1]]]
 #    for i in s[3]:
