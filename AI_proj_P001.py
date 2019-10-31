@@ -4,6 +4,10 @@ Created on Thu Oct 31 14:53:06 2019
 
 @author: Pedro
 """
+
+# code assumes the input file was loaded
+# and this was the result
+
 import copy
 
 A = [[ 'LPPT' , '0600' , '2300'],
@@ -26,6 +30,7 @@ L = [[ 'LPPT LPPR', '0055', 'a320', 100, 'a330', 80 ],
 C = [[ 'a320', '0045' ],
     [ 'a330', '0120' ]]
 
+# max profit cycle
 max_profit=0
 for i in L:
     p = i[3]
@@ -35,8 +40,10 @@ for i in L:
     
     max_profit=max_profit+p
 
+#  initial state creation   
 ini_state = [[[x[0], None , None] for x in P],[0],L,[]]
 
+# actions function
 def actions(s):
     moves = []
     for i in s[2] :
@@ -50,6 +57,8 @@ def actions(s):
             if k[1] == l[1]:
                 moves2.append([l[0],k[0]])
     return moves2
+
+# results function
 
 def results(s, a):
     
@@ -110,6 +119,8 @@ def results(s, a):
     SH.append([a[1],a[0],ini_time])
     result_state.append(SH)  
     return result_state
+
+# small function test cycle
 
 ST = copy.deepcopy(ini_state)
 for i in L:   
