@@ -10,14 +10,15 @@ import bisect
 import math
 import random
 import sys
+import utils
 from collections import deque
-
-from utils import (
+"""
+from utils import ( 
     is_in, argmin, argmax, argmax_random_tie, probability, weighted_sampler,
     memoize, print_table, open_data, PriorityQueue, name,
     distance, vector_add
 )
-
+"""
 infinity = float('inf')
 
 
@@ -27,11 +28,14 @@ class ASARProblem(object):
     __init__, goal_test, and path_cost. Then you will create instances
     of your subclass and solve them with the various search functions."""
 
-    def __init__(self, initial, goal=None):
+
+    def __init__(self, filename, goal=None):
         """The constructor specifies the initial state, and possibly a goal
         state, if there is a unique goal. Your subclass's constructor can add
         other arguments."""
-        self.initial = initial
+        airports, airplanes, airplane_class, legs = self.load(filename)
+        #Initial state: [[plane[id], startpos, currentpos, timeused], profit, openlist]
+        self.initial = Node([[[plane[0], None, None, 0] for plane in airplanes], [0], legs])
         self.goal = goal
 
     def actions(self, state):
@@ -39,6 +43,7 @@ class ASARProblem(object):
         state. The result would typically be a list, but if there are
         many actions, consider yielding them one at a time in an
         iterator, rather than building them all at once."""
+
         raise NotImplementedError
 
     def result(self, state, action):
@@ -66,17 +71,17 @@ class ASARProblem(object):
         return c + 1
 
     def heuristic(self, state):
-        """For optimization problems, each state has a value. Hill-climbing
-        and related algorithms try to maximize this value."""
+        """An best case estimation. Must be lower or equal to realistic minimum cost"""
         raise NotImplementedError
 
-    def load(f): #loads a problem from a file object f
+    def load(file):  # loads a problem from a file object f
         airports = []
         aircraft_class = []
         airplane = []
-        leg = []
-        file = open(f, 'r')
-        for line in file:
+        legs = []
+
+        for line in open(file, 'r'):
+            line = line.strip().split(' ')
             if line[0] == 'A':
                 airports.append(line[1:])
             elif line[0] == 'C':
@@ -84,18 +89,20 @@ class ASARProblem(object):
             elif line[0] == 'P':
                 airplane.append(line[1:])
             elif line[0] == 'L':
-                leg.append(line[1:])
+                legs.append(line[1:])
 
-        file.close()
-        return airports, aircraft_class, airplane, leg
+        return airports, aircraft_class, airplane, legs
 
     def save(f,s): #saves a solution state s to a file object f
         return 'Saved'
 
 
 
-aport, acc, aplane, leg = ASARProblem.load('example.txt')
-print('Airports: ',  aport, 'Aircraft class: ', acc, aplane, leg)
+airport, aircraft_class, airplane, legs = ASARProblem.load('example.txt')
+print('Airports: ',  airport)
+print('Aircraft class: ', aircraft_class)
+print('Airplanes: ', airplane)
+print('Legs: ', legs)
 
 # ______________________________________________________________________________
 

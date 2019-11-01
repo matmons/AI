@@ -32,13 +32,15 @@ C = [[ 'a320', '0045' ],
 
 # max profit cycle
 max_profit=0
-for i in L:
-    p = i[3]
-    for j in range(3,len(i),2):
-        if i[j] >= p:
-            p = i[j]
-    
-    max_profit=max_profit+p
+for leg in L:
+    profit = leg[3]
+    for profits in range(3,len(leg),2):
+        if leg[profits] >= profit:
+            profit = leg[profits]
+
+    max_profit += profit
+print(max_profit)
+
 
 #  initial state creation   
 ini_state = [[[x[0], None , None] for x in P],[0],L,[]]
