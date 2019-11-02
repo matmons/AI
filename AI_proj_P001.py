@@ -43,7 +43,7 @@ print(max_profit)
 
 
 #State structure   
-# [[plane_name, plane_location, plane_time],[profit_so_far],[legs_to_fly],[schedule]
+# [[plane_name, plane_location, plane_time],[profit_so_far],[legs_to_fly],[schedule]]
 # example : [[['CS-TUA', 'LPPR', '0715'], ['CS-TTT', None, None], ['CS-TVA', None, None]], 
 #              [80], 
 #              [[ 'LPPT LPPR', '0055', 'a320', 100, 'a330', 80 ], [ 'LPPR LPPT', '0055', 'a320', 100, 'a330', 80 ], [ 'LPPT LPFR', '0045', 'a320', 80, 'a330', 20 ], [ 'LPFR LPPT', '0045', 'a320', 80, 'a330', 20 ], [ 'LPPT LPMA', '0145', 'a320', 90, 'a330', 120 ], [ 'LPMA LPPT', '0145', 'a320', 90, 'a330', 120 ]],
