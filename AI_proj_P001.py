@@ -18,7 +18,7 @@ A = [[ 'LPPT' , '0600' , '2300'],
 
 P =[[ 'CS-TUA', 'a330' ],
     [ 'CS-TTT', 'a320' ],
-    [  'CS-TVA', 'a320' ]]
+    [ 'CS-TVA', 'a320' ]]
 
 L = [[ 'LPPT LPPR', '0055', 'a320', 100, 'a330', 80 ],
      [ 'LPPR LPPT', '0055', 'a320', 100, 'a330', 80 ],
@@ -43,9 +43,11 @@ print(max_profit)
 
 
 #  initial state creation   
+# [[plane_name, plane_location, plane_time],[profit_so_far],[leg_to_fly1, leg_to_fly2],[schedule]]
 ini_state = [[[x[0], None , None] for x in P],[0],L,[]]
 
 # actions function
+# updated so it only lets planes fly legs that start from their location
 def actions(s):
     moves = []
     for i in s[2] :
@@ -57,7 +59,12 @@ def actions(s):
     for k in P:
         for l in moves:
             if k[1] == l[1]:
-                moves2.append([l[0],k[0]])
+                    for m in s[0]:
+                         if k[0] == m[0]:
+                              if m[1] == None:
+                                   moves2.append([l[0],k[0]])
+                              elif m[1] == l[0][0:4]:
+                                   moves2.append([l[0],k[0]])
     return moves2
 
 # results function
