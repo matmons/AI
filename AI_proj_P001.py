@@ -59,7 +59,7 @@ def addtime(time1,time2):
 
 # actions function
 # update1 so it only lets planes fly legs that start from their location
-# update2 so it doesnt let planed takeoff or land after those airports close
+# update2 so it doesnt let planes takeoff or land after those airports close
 # additional changes are needed to detect day changes in addtime function!!!
 def actions(s):
 
