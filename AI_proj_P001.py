@@ -46,9 +46,23 @@ print(max_profit)
 # [[plane_name, plane_location, plane_time],[profit_so_far],[leg_to_fly1, leg_to_fly2],[schedule]]
 ini_state = [[[x[0], None , None] for x in P],[0],L,[]]
 
+# funtion that adds times from strings in the format 'HHMM'
+# can be modified to include days, since at present it goes to '0000' after '2359'
+
+def addtime(time1,time2):
+    import datetime as dt
+    HM1 = dt.time(int(time1[0:2]), int(time1[2:4]))
+    HM2 = dt.timedelta(hours = int(time2[0:2]),minutes = int(time2[2:4]))
+    HMadd = (dt.datetime.combine(dt.date(1,1,1),HM1) + HM2).time()
+    HM = HMadd.strftime('%H%M')
+    return HM
+
 # actions function
-# updated so it only lets planes fly legs that start from their location
+# update1 so it only lets planes fly legs that start from their location
+# update2 so it doesnt let planed takeoff or land after those airports close
+# additional changes are needed to detect day changes in addtime function!!!
 def actions(s):
+
     moves = []
     for i in s[2] :
         j=2
@@ -56,16 +70,26 @@ def actions(s):
             moves.append( [i[0],i[j]] )
             j=j+2
     moves2 = []
-    for k in P:
-        for l in moves:
-            if k[1] == l[1]:
-                    for m in s[0]:
-                         if k[0] == m[0]:
-                              if m[1] == None:
-                                   moves2.append([l[0],k[0]])
-                              elif m[1] == l[0][0:4]:
-                                   moves2.append([l[0],k[0]])
+    for p in P:
+        for m in moves:
+            if p[1] == m[1]:
+                for sz in s[0]:
+                    if p[0] == sz[0]:
+                        if sz[1] == None:
+                            moves2.append([m[0],p[0]])
+                        elif sz[1] == m[0][0:4]:
+                            for a in A:
+                                if a[0] == sz[1]:
+                                    if int(a[2]) > int(sz[2]):
+                                        for al in A:
+                                            if m[0][5:9] == al[0]:
+                                                for st in s[2]:
+                                                    if m[0] == st[0]:
+                                                        land_time = addtime(sz[2],st[1])
+                                                        if int(al[2]) > int(land_time):
+                                                            moves2.append([m[0],p[0]])
     return moves2
+
 
 # results function
 
