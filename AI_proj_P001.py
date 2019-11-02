@@ -180,6 +180,41 @@ for i in L:
     new_S = results(ST,move)
     ST = copy.deepcopy(new_S)
 
+#goal_test function
+     
+def goal_test(s):
+    Goal_test = 0
+    if not s[2]: #test if state Legs yet to be flown is empty
+        Goal_test = Goal_test
+    else:
+        Goal_test = Goal_test+1
+    for l in L: #test if all Legs in »L« are in the state schedule »s[-1]«
+        m=0
+        for cl in s[-1]:
+            if l[0] not in cl[1]:
+                m =m 
+            else:
+                m =m+1
+        if m == 0:
+            Goal_test = Goal_test+1
+        else:
+            Goal_test = Goal_test
+    for p in s[0]: #test if all the planes are in the same airport from where they started
+        if p[1] != None:
+            Plane_Start = next(i for i in s[-1] if i[0] == p[0])
+            Plane_End = next(i for i in s[0] if i[0] == p[0])
+            if Plane_Start[1][0:4] == Plane_End[1]:
+                Goal_test=Goal_test
+            else:
+                Goal_test=Goal_test+1
+                
+    if Goal_test == 0:
+        Goal = True
+    else:
+        Goal = False
+    return Goal
+     
+     
 #  under construction solution function   
      
 #def sol(s):
