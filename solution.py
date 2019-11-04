@@ -29,10 +29,17 @@ class ASARProblem(object):
         """The constructor specifies the initial state, and possibly a goal
         state, if there is a unique goal. Your subclass's constructor can add
         other arguments."""
-        airports, airplanes, airplane_class, legs = self.load(filename)
+        self.airports, self.airplanes, self.aircraft_class, self.legs = self.load(filename)
+        self.max_profit = 0
+        for leg in self.legs:
+            profit = int(leg[4])
+            for profits in range(4, len(leg), 2):
+                if int(leg[profits]) >= profit:
+                    profit = int(leg[profits])
+                self.max_profit += profit
         #Initial state: [[planeID, planepos, planeitme], profit, openlist of legs]
-        self.initial = Node([[[plane[0], None, 0] for plane in airplanes], [0], legs])
-        self.goal = goal
+        self.initial = [[[plane[0], None, 0] for plane in self.airplanes], [0], self.legs]
+        self.goal = None
 
     def actions(self, state):
         """Return the actions that can be executed in the given
@@ -46,6 +53,7 @@ class ASARProblem(object):
         """Return the state that results from executing the given
         action in the given state. The action must be one of
         self.actions(state)."""
+
         raise NotImplementedError
 
     def goal_test(self, state):
@@ -66,37 +74,34 @@ class ASARProblem(object):
         and action. The default method costs 1 for every step in the path."""
         openlist = [['LPPT LPPR', '0055', 'a320', 100, 'a330', 80]] #modify to get openlist from state
         action = ['LPPT LPPR', 'CS-TUA'] #given
-        airplanes = [['CS-TUA', 'a330'], ['CS-TVA', 'a320']] #need global variable with aircraftclasses
         ac_class = ''
-        for i in range(len(airplanes)):
-            if action[1] == airplanes[i][0]: #getting class of airplane used in action
-                ac_class = airplanes[i][1]
+        for i in range(len(self.airplanes)):
+            if action[1] == self.airplanes[i][0]: #getting class of airplane used in action
+                ac_class = self.airplanes[i][1]
         for leg in openlist:
             if leg[0] == action[0]:
                 cost = 1/leg[leg.index(ac_class)+1] #finding cost for class used in action
+        path_cost = c + cost
+        return path_cost
 
-        return cost
+
 
     def heuristic(self, state):
         """A best case estimation. Must be lower or equal to realistic minimum cost
 
-            Using the inverse of max profit as the heuristic.
+            Evaluation function uses the heuristic. f(n) = g(n) + h(n). The heuristic, this funciton, is the h(n).
         """
-        min_cost = 0
-        for leg in L:
-            profit = leg[3]
-            for profits in range(3, len(leg), 2):
-                if leg[profits] >= profit:
-                    profit = leg[profits]
+        current_profit = int(state[1][0])
+        if current_profit-self.max_profit == 0:
+            heuristic = 0
+        else:
+            heuristic = 1/current_profit - 1/self.max_profit
+        return heuristic
 
-            min_cost += 1/profit
-
-        raise NotImplementedError
-
-    def load(file):  # loads a problem from a file object f
+    def load(self, file):  # loads a problem from a file object f
         airports = []
         aircraft_class = []
-        airplane = []
+        airplanes = []
         legs = []
 
         for line in open(file, 'r'):
@@ -106,22 +111,19 @@ class ASARProblem(object):
             elif line[0] == 'C':
                 aircraft_class.append(line[1:])
             elif line[0] == 'P':
-                airplane.append(line[1:])
+                airplanes.append(line[1:])
             elif line[0] == 'L':
                 legs.append(line[1:])
 
-        return airports, aircraft_class, airplane, legs
+        return airports, airplanes, aircraft_class, legs
 
     def save(f,s): #saves a solution state s to a file object f
         return 'Saved'
 
 
 
-airport, aircraft_class, airplane, legs = ASARProblem.load('example.txt')
-# print('Airports: ',  airport)
-# print('Aircraft class: ', aircraft_class)
-# print('Airplanes: ', airplane)
-# print('Legs: ', legs)
+
+
 
 # ______________________________________________________________________________
 
@@ -241,5 +243,15 @@ L = [['LPPT LPPR', '0055', 'a320', 100, 'a330', 80],
 C = [['a320', '0045'],
      ['a330', '0120']]
 
-#state1 = Node([[[plane[0], None, 0] for plane in P], 10, L])
-#print(state1.state[1])
+problem = ASARProblem('example.txt')
+test_state1 = [[[plane[0], None, 0] for plane in problem.airplanes], [200], problem.legs]
+test_state2 = [[[plane[0], None, 0] for plane in problem.airplanes], [400], problem.legs]
+action = ['LPPT LPPR', 'CS-TUA']
+print('Airports: ',  problem.airports)
+print('Aircraft class: ', problem.aircraft_class)
+print('Airplanes: ', problem.airplanes)
+print('Legs: ', problem.legs)
+path_cost = problem.path_cost(3, test_state1, action, test_state2)
+heuristic = problem.heuristic(test_state1)
+print(heuristic)
+print(path_cost)

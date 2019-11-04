@@ -20,12 +20,12 @@ P =[[ 'CS-TUA', 'a330' ],
     [ 'CS-TTT', 'a320' ],
     [ 'CS-TVA', 'a320' ]]
 
-L = [[ 'LPPT LPPR', '0055', 'a320', 100, 'a330', 80 ],
-     [ 'LPPR LPPT', '0055', 'a320', 100, 'a330', 80 ],
-     [ 'LPPT LPFR', '0045', 'a320', 80, 'a330', 20 ],
-     [ 'LPFR LPPT', '0045', 'a320', 80, 'a330', 20 ],
-     [ 'LPPT LPMA', '0145', 'a320', 90, 'a330', 120 ],
-     [ 'LPMA LPPT', '0145', 'a320', 90, 'a330', 120 ]]
+L = [[ ('LPPT', 'LPPR'), '0055', 'a320', 100, 'a330', 80 ],
+     [ ('LPPR', 'LPPT'), '0055', 'a320', 100, 'a330', 80 ],
+     [ ('LPPT', 'LPFR'), '0045', 'a320', 80, 'a330', 20 ],
+     [ ('LPFR', 'LPPT'), '0045', 'a320', 80, 'a330', 20 ],
+     [ ('LPPT', 'LPMA'), '0145', 'a320', 90, 'a330', 120 ],
+     [ ('LPMA', 'LPPT'), '0145', 'a320', 90, 'a330', 120 ]]
     
 C = [[ 'a320', '0045' ],
     [ 'a330', '0120' ]]
@@ -108,6 +108,35 @@ def actions(s):
                                                             moves2.append([m[0],p[0]])
     return moves2
 
+def actions2(s):
+
+    moves = []
+    for i in s[2] :
+        j=2
+        while j+1 <= len(s[2][0]):
+            moves.append( [list(i[0]),i[j]] )
+            j=j+2
+    moves2 = []
+    for p in P:
+        for m in moves:
+            if p[1] == m[1]:
+                for sz in s[0]:
+                    if p[0] == sz[0]:
+                        if sz[1] == None:
+                            moves2.append([m[0],p[0]])
+                        elif sz[1] == m[0][0:4]:
+                            for a in A:
+                                if a[0] == sz[1]:
+                                    if int(a[2]) > int(sz[2]):
+                                        for al in A:
+                                            if m[0][5:9] == al[0]:
+                                                for st in s[2]:
+                                                    if m[0] == st[0]:
+                                                        land_time = addtime(sz[2],st[1])
+                                                        if int(al[2]) > int(land_time):
+                                                            moves2.append([m[0],p[0]])
+    return moves2
+
 
 # results function
 # update1 changed to make use of function addtime
@@ -122,7 +151,7 @@ def results(s, a):
            if g[0] == a[1]:   
                if g[2] == None:  #if the plane hasnt been used 
                    for e in A:
-                       if a[0][0:4] == e[0]:
+                       if a[1] == e[0]:
                            ini_time = e[1]  #starting time is set to departing airport opening time   
                else:
                    ini_time = g[2] #else its the plane's time
@@ -174,8 +203,9 @@ def results(s, a):
 # small function test cycle
 
 ST = copy.deepcopy(ini_state)
-for i in L:   
-    L1 = actions(ST) 
+for i in L:
+    L1 = actions2(ST)
+    print(L1)
     move = L1[0]
     new_S = results(ST,move)
     ST = copy.deepcopy(new_S)
@@ -231,3 +261,10 @@ def goal_test(s):
 #    return S
 #
 #solv = sol(ST)
+
+test_state = [[['CS-TUA', 'LPPR', '0715'], ['CS-TTT', None, None], ['CS-TVA', None, None]], [80], L[1:], [['CS-TUA', 'LPPT LPPR', '0600']]]
+#
+# moves3 =[]
+# print(test_state[2][0][0])
+# moves3.append(list(test_state[2][0][0]))
+# print(moves3)
