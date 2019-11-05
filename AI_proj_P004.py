@@ -226,3 +226,28 @@ Act = actions(test_state)
 
 Gtest3 = goal_test(test_state)           
 #print(Gtest3)
+
+# solution creation test list
+ST2 =ST[-1]+[['CS-TTT', 'LPPR LPPM', '0600']]+[['CS-TTT', 'LPPM LPPT', '0800']]+[['CS-TTT', 'LPPT LPPR', '1000']]+[['CS-TVA', 'LPFR LPMA', '0700']]+[['CS-TVA', 'LPMA LPPM', '0900']]+[['CS-TVA', 'LPPM LPFR', '1100']]
+
+#solution creator function. from state
+def solution(s):
+    sol = [[sl[0]]+[sl[-1]]+[sl[-2]] for p in P for sl in s[-1] if p[0]==sl[0]]
+    sol2 = []
+    for p in P:
+        b = 0
+        for i in sol:
+            if p[0] == i[0] and b == 0:
+                sol2.append([i[0]]+[i[-1]]+[i[-2]])
+                b = 1
+            elif p[0] == i[0] and b != 0:
+                for j in sol2:
+                    if p[0] == j[0]:
+                        j.append(i[-1])
+                        j.append(i[-2])
+    return sol2
+
+#solution creation testes
+T_S1 = solution(ST)    
+ST3 = ST[:-1]+[ST2]       
+T_S2 = solution(ST3)  
