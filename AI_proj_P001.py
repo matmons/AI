@@ -32,7 +32,7 @@ C = [[ 'a320', '0045' ],
 
 # max profit cycle
 max_profit=0
-for leg in L:
+for leg in [[list(i[0])[0]+' '+list(i[0])[1]]+i[1:] for i in L]:
     profit = leg[3]
     for profits in range(3,len(leg),2):
         if leg[profits] >= profit:
@@ -51,7 +51,7 @@ print(max_profit)
 #[schedule] = [plane_name, Leg_flown, departure_time]
 
 #  initial state creation 
-ini_state = [[[x[0], None , None] for x in P],[0],L,[]]
+ini_state = [[[x[0], None , None] for x in P],[0],[[list(i[0])[0]+' '+list(i[0])[1]]+i[1:] for i in L],[]]
 
 
 # funtion that adds times from strings in the format 
@@ -151,7 +151,7 @@ def results(s, a):
            if g[0] == a[1]:   
                if g[2] == None:  #if the plane hasnt been used 
                    for e in A:
-                       if a[1] == e[0]:
+                       if a[0][0:4] == e[0]:
                            ini_time = e[1]  #starting time is set to departing airport opening time   
                else:
                    ini_time = g[2] #else its the plane's time
@@ -203,7 +203,7 @@ def results(s, a):
 # small function test cycle
 
 ST = copy.deepcopy(ini_state)
-for i in L:
+for i in [[list(i[0])[0]+' '+list(i[0])[1]]+i[1:] for i in L]:
     L1 = actions2(ST)
     print(L1)
     move = L1[0]
@@ -218,7 +218,7 @@ def goal_test(s):
         Goal_test = Goal_test
     else:
         Goal_test = Goal_test+1
-    for l in L: #test if all Legs in »L« are in the state schedule »s[-1]«
+    for l in [[list(i[0])[0]+' '+list(i[0])[1]]+i[1:] for i in L]: #test if all Legs in »L« are in the state schedule »s[-1]«
         m=0
         for cl in s[-1]:
             if l[0] not in cl[1]:
@@ -262,7 +262,7 @@ def goal_test(s):
 #
 #solv = sol(ST)
 
-test_state = [[['CS-TUA', 'LPPR', '0715'], ['CS-TTT', None, None], ['CS-TVA', None, None]], [80], L[1:], [['CS-TUA', 'LPPT LPPR', '0600']]]
+test_state = [[['CS-TUA', 'LPPR', '0715'], ['CS-TTT', None, None], ['CS-TVA', None, None]], [80], [[list(i[0])[0]+' '+list(i[0])[1]]+i[1:] for i in L][1:], [['CS-TUA', 'LPPT LPPR', '0600']]]
 #
 # moves3 =[]
 # print(test_state[2][0][0])
