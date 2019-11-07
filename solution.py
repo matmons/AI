@@ -196,9 +196,11 @@ class ASARProblem(object):
 
             Evaluation function uses the heuristic. f(n) = g(n) + h(n). The heuristic, this funciton, is the h(n).
         """
-        current_profit = int(state[1][0])
+        current_profit = int(state.state[1][0])
         if current_profit-self.max_profit == 0:
             heuristic = 0
+        elif current_profit == 0:
+            heuristic = 1
         else:
             heuristic = 1/current_profit - 1/self.max_profit
         return heuristic
@@ -351,7 +353,7 @@ def astar_search(problem, h=None):
     """A* search is best-first graph search with f(n) = g(n)+h(n).
     You need to specify the h function when you call astar_search, or
     else in your Problem subclass."""
-    h = memoize(h or problem.h, 'h')
+    h = memoize(h or problem.heuristic, 'h')
     return best_first_graph_search(problem, lambda n: n.path_cost + h(n))
 
 """
@@ -377,17 +379,14 @@ C = [['a320', '0045'],
 
 problem = ASARProblem()
 problem.load('example.txt')
-actions = problem.actions(problem.initial)
-print('Action: ', actions[0])
-print('leg: ', problem.initial[2][0])
-result = problem.result(problem.initial, actions[0])
-print('result: ', result)
-path_cost = problem.path_cost(0, problem.initial, actions[0], result)
-print(path_cost)
-heuristic = problem.heuristic(result)
-print(heuristic)
-"""
+#actions = problem.actions(problem.initial)
+#print('Action: ', actions[0])
+#print('leg: ', problem.initial[2][0])
+#result = problem.result(problem.initial, actions[0])
+#print('result: ', result)
+#path_cost = problem.path_cost(0, problem.initial, actions[0], result)
+#print(path_cost)
+#heuristic = problem.heuristic(result)
+#print(heuristic)
 
-heuristic = problem.heuristic()
-path_cost = problem.path_cost()
-"""
+astar_search(problem)
