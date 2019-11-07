@@ -9,6 +9,7 @@ Problem class, Node class, astar_search and best_first_graph_search from https:/
 import math
 import random
 import sys
+import copy
 from utils import (
     is_in, argmin, argmax, argmax_random_tie, probability, weighted_sampler,
     memoize, print_table, open_data, PriorityQueue, name,
@@ -41,6 +42,21 @@ class ASARProblem(object):
         self.initial = [[[plane[0], None, 0] for plane in self.airplanes], [0], self.legs]
         self.goal = None
 
+    def addtime(time1, time2):
+        from datetime import datetime, timedelta
+        try:
+            T = int(time1[-6:-4])
+        except:
+            T = 0
+        HM1 = datetime(year=1, month=1, day=1 + T, hour=int(time1[-4:-2]), minute=int(time1[-2:]))
+        HM2 = timedelta(hours=int(time2[-4:-2]), minutes=int(time2[-2:]))
+        DDadd = (HM1 + HM2)
+        DHM = DDadd.strftime('%d%H%M')
+        if DHM[-6:-4] == '01':
+            res = DDadd.strftime('%H%M')
+        else:
+            res = DDadd.strftime('%d%H%M')
+        return res
     def actions(self, state):
         """Return the actions that can be executed in the given
         state. The result would typically be a list, but if there are
@@ -50,21 +66,98 @@ class ASARProblem(object):
         raise NotImplementedError
 
     def result(self, state, action):
-        """Return the state that results from executing the given
-        action in the given state. The action must be one of
-        self.actions(state)."""
-
-        raise NotImplementedError
+        L2=[]
+        added_profit = 0
+        model = []
+        #cycle to determine the action starting time »ini_time«
+        #and airplane model »model«
+        for plane in state[0]:
+               if plane[0] == action[1]:
+                   if plane[2] == None: #if the plane hasnt been used
+                       for airport in self.airports:
+                           if action[0][0:4] == airport[0]:
+                               ini_time = airport[1]   #starting time is set to departing airport opening time
+                   else:
+                       ini_time = plane[2] #else its the plane's time
+                   for i in P:
+                      if plane[0] == i[0]:
+                          model = copy.deepcopy(i[1])
+        #cycle to create the new list of not yet flown Legs »L2«
+        #and travel time »T_time«
+        #and use the airplane »model« to determine profit from current Leg »added_profit«
+        for f in state[2]:
+            if f[0] != action[0]:
+                L2.append(f)
+            else:
+                T_time=copy.deepcopy(f[1])
+                for i in range(0,len(f)):
+                    if f[i] == model:
+                        added_profit = f[i+1]
+        #airplane rotation time »R_time« is determined from the »model«
+        for i in C:
+            if i[0] == model:
+                R_time =copy.deepcopy(i[1])
+        #new plane time of day »ITR« is calculated from »ini_time« , »T_time« and »R_time«
+        IT = self.addtime(ini_time,T_time)
+        ITR = self.addtime(IT,R_time)
+        #new plane status is created
+        #[plane_code, plane_location, plane_time]
+        new_plane = []
+        new_plane.append(action[1])
+        new_plane.append(action[0][5:9])
+        new_plane.append(ITR)
+        new_planeS = []
+        #this new plane status added with the other planes unchanged status
+        for i in s[0]:
+            if i[0] == new_plane[0]:
+                new_planeS.append(new_plane)
+            else:
+                new_planeS.append(i)
+        #the new state is now assembled
+        #[Planes_Status, Profit_So_far, Not_Yet_Flown_Legs, Schedule]
+        result_state = []
+        result_state.append(new_planeS)
+        result_state.append([s[1][0]+added_profit])
+        result_state.append(L2)
+        SH =copy.deepcopy(s[3])
+        SH.append([a[1],a[0],ini_time])
+        result_state.append(SH)
+        return result_state
 
     def goal_test(self, state):
         """Return True if the state is a goal. The default method compares the
         state to self.goal or checks for state in self.goal if it is a
         list, as specified in the constructor. Override this method if
         checking against a single self.goal is not enough."""
-        if isinstance(self.goal, list):
-            return is_in(state, self.goal)
+        Goal_test = True
+        if not state[2]:  # test if state Legs yet to be flown is empty
+            pass
         else:
-            return state == self.goal
+            return False
+        for l in [[list(i[0])[0] + ' ' + list(i[0])[1]] + i[1:] for i in L]:  # test if all Legs in »L« are in the state schedule »s[-1]«
+            m = 0
+            for cl in state[-1]:
+                if l[0] not in cl[1]:
+                    m = m
+                else:
+                    m = m + 1
+            if m == 0:
+                return False
+            else:
+                pass
+        for plane in state[0]:  # test if all the planes are in the same airport from where they started
+            if plane[1] != None:
+                Plane_Start = next(i for i in state[-1] if i[0] == plane[0])
+                Plane_End = next(i for i in state[0] if i[0] == plane[0])
+                if Plane_Start[1][0:4] == Plane_End[1]:
+                    pass
+                else:
+                    return False
+        return Goal_test
+        # if isinstance(self.goal, list):
+        #     return is_in(state, self.goal)
+        # else:
+        #     return state == self.goal
 
     def path_cost(self, c, state1, action, state2):
         """Return the cost of a solution path that arrives at state2 from
@@ -72,16 +165,19 @@ class ASARProblem(object):
         is such that the path doesn't matter, this function will only look at
         state2.  If the path does matter, it will consider c and maybe state1
         and action. The default method costs 1 for every step in the path."""
-        openlist = [['LPPT LPPR', '0055', 'a320', 100, 'a330', 80]] #modify to get openlist from state
-        action = ['LPPT LPPR', 'CS-TUA'] #given
+        openlist = [[('LPPT', 'LPPR'), '0055', 'a320', 100, 'a330', 80],
+                    [('LPMA', 'LPPT'), '0145', 'a320', 90, 'a330', 120]] #modify to get openlist from state
+
         ac_class = ''
         for i in range(len(self.airplanes)):
             if action[1] == self.airplanes[i][0]: #getting class of airplane used in action
                 ac_class = self.airplanes[i][1]
         for leg in openlist:
+            print(leg)
             if leg[0] == action[0]:
                 cost = 1/leg[leg.index(ac_class)+1] #finding cost for class used in action
-        path_cost = c + cost
+        path_cost = 1/state1[1][0] + cost
+        #state2[1][0] = path_cost
         return path_cost
 
 
@@ -233,12 +329,12 @@ P = [['CS-TUA', 'a330'],
      ['CS-TTT', 'a320'],
      ['CS-TVA', 'a320']]
 
-L = [['LPPT LPPR', '0055', 'a320', 100, 'a330', 80],
-     ['LPPR LPPT', '0055', 'a320', 100, 'a330', 80],
-     ['LPPT LPFR', '0045', 'a320', 80, 'a330', 20],
-     ['LPFR LPPT', '0045', 'a320', 80, 'a330', 20],
-     ['LPPT LPMA', '0145', 'a320', 90, 'a330', 120],
-     ['LPMA LPPT', '0145', 'a320', 90, 'a330', 120]]
+L = [[('LPPT', 'LPPR'), '0055', 'a320', 100, 'a330', 80],
+     [('LPPR', 'LPPT'), '0055', 'a320', 100, 'a330', 80],
+     [('LPPT', 'LPFR'), '0045', 'a320', 80, 'a330', 20],
+     [('LPFR', 'LPPT'), '0045', 'a320', 80, 'a330', 20],
+     [('LPPT', 'LPMA'), '0145', 'a320', 90, 'a330', 120],
+     [('LPMA', 'LPPT'), '0145', 'a320', 90, 'a330', 120]]
 
 C = [['a320', '0045'],
      ['a330', '0120']]
@@ -246,12 +342,12 @@ C = [['a320', '0045'],
 problem = ASARProblem('example.txt')
 test_state1 = [[[plane[0], None, 0] for plane in problem.airplanes], [200], problem.legs]
 test_state2 = [[[plane[0], None, 0] for plane in problem.airplanes], [400], problem.legs]
-action = ['LPPT LPPR', 'CS-TUA']
+action = [('LPPT', 'LPPR'), 'CS-TUA']
 print('Airports: ',  problem.airports)
 print('Aircraft class: ', problem.aircraft_class)
 print('Airplanes: ', problem.airplanes)
 print('Legs: ', problem.legs)
-path_cost = problem.path_cost(3, test_state1, action, test_state2)
+path_cost = problem.path_cost(0, test_state1, action, test_state2)
 heuristic = problem.heuristic(test_state1)
 print(heuristic)
 print(path_cost)

@@ -24,25 +24,25 @@ class ASARProblem(object):
     of your subclass and solve them with the various search functions."""
 
 
-    def __init__(self, filename, outputfile, goal=None):
+    def __init__(self, goal=None):
         """The constructor specifies the initial state, and possibly a goal
         state, if there is a unique goal. Your subclass's constructor can add
         other arguments."""
-        infile = open(filename, 'r')
-
-        self.airports, self.airplanes, self.aircraft_class, self.legs = self.load(infile)
-        self.max_profit = 0
-        for leg in self.legs:
-            profit = int(leg[3])
-            for profits in range(5, len(leg), 2):
-                if int(leg[profits]) >= profit:
-                    profit = int(leg[profits])
-
-                self.max_profit += profit
-        #Initial state: [[planeID, planepos, planeitme], profit, openlist of legs, solution]
-        self.initial = [[[plane[0], None, 0] for plane in self.airplanes], [0], [[list(leg[0])[0] + ' ' + list(leg[0])[1]] + leg[1:] for leg in self.legs]]
-        self.goal = None
-        self.outfile = open(outputfile, 'w')
+        # infile = open(filename, 'r')
+        #
+        # self.airports, self.airplanes, self.aircraft_class, self.legs = self.load(infile)
+        # self.max_profit = 0
+        # for leg in self.legs:
+        #     profit = int(leg[3])
+        #     for profits in range(5, len(leg), 2):
+        #         if int(leg[profits]) >= profit:
+        #             profit = int(leg[profits])
+        #
+        #         self.max_profit += profit
+        # #Initial state: [[planeID, planepos, planeitme], profit, openlist of legs, solution]
+        # self.initial = [[[plane[0], None, 0] for plane in self.airplanes], [0], [[list(leg[0])[0] + ' ' + list(leg[0])[1]] + leg[1:] for leg in self.legs]]
+        # self.goal = None
+        # self.outfile = open(outputfile, 'w')
 
     def addtime(self, time1, time2):
         from datetime import datetime, timedelta
@@ -208,36 +208,45 @@ class ASARProblem(object):
 
 
 
-    def heuristic(self, state):
+    def heuristic(self, node):
         """A best case estimation. Must be lower or equal to realistic minimum cost
 
             Evaluation function uses the heuristic. f(n) = g(n) + h(n). The heuristic, this funciton, is the h(n).
         """
-        current_profit = int(state[1][0])
-        if state[1][0] == 0:
+        current_profit = int(node.state[1][0])
+        if node.state[1][0] == 0:
             heuristic = 1 - 1/self.max_profit
         else:
             heuristic = 1/current_profit - 1/self.max_profit
         return heuristic
 
     def load(self, file):  # loads a problem from a file object f
-        airports = []
-        aircraft_class = []
-        airplanes = []
-        legs = []
+        self.airports = set()
+        self.aircraft_class = set()
+        self.airplanes = set()
+        self.legs = set()
 
         for line in file:
             line = line.strip().split(' ')
             if line[0] == 'A':
-                airports.append(line[1:])
+                self.airports.add(line[1:])
             elif line[0] == 'C':
-                aircraft_class.append(line[1:])
+                self.aircraft_class.add(line[1:])
             elif line[0] == 'P':
-                airplanes.append(line[1:])
+                self.airplanes.add(line[1:])
             elif line[0] == 'L':
-                legs.append([(line[1], line[2])] + line[3:])
+                self.legs.add([(line[1], line[2])] + line[3:])
+        self.initial = [[[plane[0], None, 0] for plane in self.airplanes], [0], [[list(leg[0])[0] + ' ' + list(leg[0])[1]] + leg[1:] for leg in self.legs]]
+        self.max_profit = 0
+        for leg in self.legs:
+            profit = int(leg[3])
+            for profits in range(5, len(leg), 2):
+                if int(leg[profits]) >= profit:
+                    profit = int(leg[profits])
 
-        return airports, airplanes, aircraft_class, legs
+                self.max_profit += profit
+
+        pass
     def solution(self, state):
         sol = [[sl[0]] + [sl[-1]] + [sl[-2]] for plane in self.airplanes for sl in state[-1] if plane[0] == sl[0]]
         sol2 = []
@@ -265,3 +274,24 @@ class ASARProblem(object):
         f.write('P'+sol[2])
 
         return
+
+problem = ASARProblem()
+file_in = open('example.txt','r')
+problem.load(file_in)
+file_in.close()
+test_state1 = [[[plane[0], None, None] for plane in problem.airplanes], [0], [[list(leg[0])[0] + ' ' + list(leg[0])[1]] + leg[1:] for leg in problem.legs], []]
+test_state2 = [[[plane[0], None, None] for plane in problem.airplanes], [0], [[list(leg[0])[0] + ' ' + list(leg[0])[1]] + leg[1:] for leg in problem.legs], []]
+print('Airports: ',  problem.airports)
+print(type(problem.airports))
+# print('Aircraft class: ', problem.aircraft_class)
+# print('Airplanes: ', problem.airplanes)
+# print('Legs: ', problem.legs)
+# actions = problem.actions(test_state1)
+# results = problem.results(test_state1, actions[0])
+# path_cost = problem.path_cost(0, test_state1, actions[0], test_state2)
+# heuristic = problem.heuristic(test_state1)
+# print(actions)
+# print(results)
+# print(problem.max_profit)
+# print(heuristic)
+# print(path_cost)

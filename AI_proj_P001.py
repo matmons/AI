@@ -10,7 +10,7 @@ Created on Thu Oct 31 14:53:06 2019
 
 import copy
 
-A = [[ 'LPPT' , '0600' , '2300'],
+self.airports = [[ 'LPPT' , '0600' , '2300'],
      [ 'LPPR' , '0600' , '2200'],
      [ 'LPFR' , '0800' , '2000' ],
      [ 'LPMA' , '0800' , '2200' ]]
@@ -79,56 +79,56 @@ def addtime(time1,time2):
 # update1 so it only lets planes fly legs that start from their location
 # update2 so it doesnt let planes takeoff or land after those airports close
 # update3 with the new version of addtime it should detect day changes
-def actions(s):
+def actions(state):
 
     moves = []
-    for i in s[2] :
+    for i in state[2] :
         j=2
-        while j+1 <= len(s[2][0]):
+        while j+1 <= len(state[2][0]):
             moves.append( [i[0],i[j]] )
             j=j+2
     moves2 = []
     for p in P:
         for m in moves:
             if p[1] == m[1]:
-                for sz in s[0]:
+                for sz in state[0]:
                     if p[0] == sz[0]:
                         if sz[1] == None:
                             moves2.append([m[0],p[0]])
                         elif sz[1] == m[0][0:4]:
-                            for a in A:
-                                if a[0] == sz[1]:
-                                    if int(a[2]) > int(sz[2]):
-                                        for al in A:
+                            for airport in self.airports:
+                                if airport[0] == sz[1]:
+                                    if int(airport[2]) > int(sz[2]):
+                                        for al in self.airports:
                                             if m[0][5:9] == al[0]:
-                                                for st in s[2]:
+                                                for st in state[2]:
                                                     if m[0] == st[0]:
                                                         land_time = addtime(sz[2],st[1])
                                                         if int(al[2]) > int(land_time):
                                                             moves2.append([m[0],p[0]])
     return moves2
 
-def actions2(s):
+def actions2(state):
 
     moves = []
-    for i in s[2] :
+    for i in state[2] :
         j=2
-        while j+1 <= len(s[2][0]):
+        while j+1 <= len(state[2][0]):
             moves.append( [list(i[0]),i[j]] )
             j=j+2
     moves2 = []
     for p in P:
         for m in moves:
             if p[1] == m[1]:
-                for sz in s[0]:
+                for sz in state[0]:
                     if p[0] == sz[0]:
                         if sz[1] == None:
                             moves2.append([m[0],p[0]])
                         elif sz[1] == m[0][0:4]:
-                            for a in A:
-                                if a[0] == sz[1]:
-                                    if int(a[2]) > int(sz[2]):
-                                        for al in A:
+                            for airport in self.airports:
+                                if airport[0] == sz[1]:
+                                    if int(airport[2]) > int(sz[2]):
+                                        for al in self.airports:
                                             if m[0][5:9] == al[0]:
                                                 for st in s[2]:
                                                     if m[0] == st[0]:
@@ -140,29 +140,29 @@ def actions2(s):
 
 # results function
 # update1 changed to make use of function addtime
-def results(s, a):
+def results(s, action):
     import copy
     L2=[]
     added_profit = 0
     model = []
     #cycle to determine the action starting time »ini_time«
     #and airplane model »model«
-    for g in s[0]:
-           if g[0] == a[1]:   
-               if g[2] == None:  #if the plane hasnt been used 
-                   for e in A:
-                       if a[0][0:4] == e[0]:
-                           ini_time = e[1]  #starting time is set to departing airport opening time   
+    for leg in s[0]:
+           if leg[0] == action[1]:
+               if leg[2] == None:  #if the plane hasnt been used
+                   for airport in self.airports:
+                       if action[0][0:4] == airport[0]:
+                           ini_time = airport[1]  #starting time is set to departing airport opening time
                else:
-                   ini_time = g[2] #else its the plane's time
+                   ini_time = leg[2] #else its the plane's time
                for i in P:
-                  if g[0] == i[0]:
+                  if leg[0] == i[0]:
                       model = copy.deepcopy(i[1])
     #cycle to create the new list of not yet flown Legs »L2« 
     #and travel time »T_time«
     #and use the airplane »model« to determine profit from current Leg »added_profit«
     for f in s[2]:
-        if f[0] != a[0]:
+        if f[0] != action[0]:
             L2.append(f)
         else:
             T_time=copy.deepcopy(f[1])
@@ -179,8 +179,8 @@ def results(s, a):
     #new plane status is created
     #[plane_code, plane_location, plane_time]
     new_plane = []
-    new_plane.append(a[1])
-    new_plane.append(a[0][5:9])
+    new_plane.append(action[1])
+    new_plane.append(action[0][5:9])
     new_plane.append(ITR)
     new_planeS = []
     #this new plane status added with the other planes unchanged status
@@ -196,7 +196,7 @@ def results(s, a):
     result_state.append([s[1][0]+added_profit])
     result_state.append(L2)
     SH =copy.deepcopy(s[3])
-    SH.append([a[1],a[0],ini_time])
+    SH.append([action[1],action[0],ini_time])
     result_state.append(SH)  
     return result_state
 
