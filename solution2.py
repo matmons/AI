@@ -10,6 +10,7 @@ import math
 import random
 import sys
 import copy
+import os
 from utils import (
     is_in, argmin, argmax, argmax_random_tie, probability, weighted_sampler,
     memoize, print_table, open_data, PriorityQueue, name,
@@ -390,7 +391,7 @@ C = [['a320', '0045'],
 """
 
 problem = ASARProblem()
-in_file = open('example.txt')
+in_file = open('simple5.txt')
 problem.load(in_file)
 solution = astar_search(problem)
 out_file = open('output.txt', 'w')
