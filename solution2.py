@@ -162,7 +162,7 @@ class ASARProblem(object):
             else:
                 pass
         for plane in state[0]:  # test if all the planes are in the same airport from where they started
-            if plane[1] != '':
+            if plane[2] != '':
                 for step in state[-1]:
                     if step[0] == plane[0]:
                         plane_start = step[1][0]
