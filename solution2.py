@@ -71,13 +71,13 @@ class ASARProblem(object):
                             elif plane_status[1] == m[0][0]:
                                 for airport in self.airports:
                                     if airport[0] == plane_status[1]:
-                                        if int(airport[2]) > int(plane_status[2]):
+                                        if int(airport[2]) > int(plane_status[2]) and int(airport[1]) <= int(plane_status[2]):
                                             for airport2 in self.airports:
                                                 if m[0][1] == airport2[0]:
                                                     for leg2 in state[2]:
                                                         if m[0] == leg2[0]:
                                                             land_time = self.addtime(plane_status[2], leg2[1])
-                                                            if int(airport2[2]) > int(land_time):
+                                                            if int(airport2[2]) > int(land_time) and int(airport2[1]) <= int(land_time):
                                                                 moves2.append([m[0], plane[0]])
         return moves2
     def result(self, state, action):
@@ -162,8 +162,8 @@ class ASARProblem(object):
             else:
                 pass
         for plane in state[0]:  # test if all the planes are in the same airport from where they started
-            if plane[1] != None:
-                for step in state[3]:
+            if plane[1] != '':
+                for step in state[-1]:
                     if step[0] == plane[0]:
                         plane_start = step[1][0]
                         break
