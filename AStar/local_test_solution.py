@@ -6,7 +6,7 @@ Pedro Pinto, Mons Erling Mathiesen, Amanda K. Jansen
 Problem class, Node class, astar_search and best_first_graph_search from https://github.com/aimacode/aima-python/blob/master/search.py
 """
 
-from astar.utils import (
+from utils import (
     memoize, PriorityQueue
 )
 
