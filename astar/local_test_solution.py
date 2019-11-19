@@ -1,3 +1,18 @@
+"""
+Artificial Intelligence and Decision Systems
+Pedro Pinto, Mons Erling Mathiesen, Amanda K. Jansen
+
+
+Problem class, Node class, astar_search and best_first_graph_search from https://github.com/aimacode/aima-python/blob/master/search.py
+"""
+
+from astar.utils import (
+    memoize, PriorityQueue
+)
+
+infinity = float('inf')
+
+
 class ASARProblem(object):
     """The abstract class for a formal problem. You should subclass
     this and implement the methods actions and result, and possibly
@@ -12,7 +27,7 @@ class ASARProblem(object):
         #self.airports, self.airplanes, self.aircraft_class, self.legs = self.load(filename)
 
         #Initial state: [[planeID, planepos, planeitme], profit, openlist of legs]
-
+        self.nodesexplored = 0
         self.goal = None
     def addtime(self, time1, time2):
         if time1 == '':
@@ -49,13 +64,13 @@ class ASARProblem(object):
                             elif plane_status[1] == m[0][0]:
                                 for airport in self.airports:
                                     if airport[0] == plane_status[1]:
-                                        if int(airport[2]) > int(plane_status[2]) and int(airport[1]) <= int(plane_status[2]):
+                                        if int(airport[2]) > int(plane_status[2]):
                                             for airport2 in self.airports:
                                                 if m[0][1] == airport2[0]:
                                                     for leg2 in state[2]:
                                                         if m[0] == leg2[0]:
                                                             land_time = self.addtime(plane_status[2], leg2[1])
-                                                            if int(airport2[2]) > int(land_time) and int(airport2[1]) <= int(land_time):
+                                                            if int(airport2[2]) > int(land_time):
                                                                 moves2.append([m[0], plane[0]])
         return moves2
     def result(self, state, action):
@@ -123,6 +138,7 @@ class ASARProblem(object):
         state to self.goal or checks for state in self.goal if it is a
         list, as specified in the constructor. Override this method if
         checking against a single self.goal is not enough."""
+        self.nodesexplored += 1
         Goal_test = True
         if not state[2]:  # test if state Legs yet to be flown is empty
             pass
@@ -147,6 +163,7 @@ class ASARProblem(object):
                         break
                 # plane_start = next(i for i in state[3] if i[0] == plane[0])
                 # plane_end = next(i for i in state[0] if i[0] == plane[0])
+
                 if plane_start == plane[1]:
                     pass
                 else:
@@ -248,3 +265,127 @@ class ASARProblem(object):
             f.write('Infeasible')
 
         pass
+# ______________________________________________________________________________
+
+
+class Node:
+    """A node in a search tree. Contains a pointer to the parent (the node
+    that this is a successor of) and to the actual state for this node. Note
+    that if a state is arrived at by two paths, then there are two nodes with
+    the same state.  Also includes the action that got us to this state, and
+    the total path_cost (also known as g) to reach the node.  Other functions
+    may add an f and h value; see best_first_graph_search and astar_search for
+    an explanation of how the f and h values are handled. You will not need to
+    subclass this class."""
+
+    def __init__(self, state, parent=None, action=None, path_cost=0):
+        """Create a search tree Node, derived from a parent by an action."""
+        self.state = state
+        self.parent = parent
+        self.action = action
+        self.path_cost = path_cost
+        self.depth = 0
+        if parent:
+            self.depth = parent.depth + 1
+
+    def __repr__(self):
+        return "<Node {}>".format(self.state)
+
+    def __lt__(self, node):
+        return self.state < node.state
+
+    def expand(self, problem):
+        """List the nodes reachable in one step from this node."""
+        return [self.child_node(problem, action)
+                for action in problem.actions(self.state)]
+
+    def child_node(self, problem, action):
+        """[Figure 3.10]"""
+        next_state = problem.result(self.state, action)
+        next_node = Node(next_state, self, action,
+                         problem.path_cost(self.path_cost, self.state,
+                                           action, next_state))
+        return next_node
+
+    def solution(self):
+        """Return the sequence of actions to go from the root to this node."""
+        return [node.action for node in self.path()[1:]]
+
+    def path(self):
+        """Return a list of nodes forming the path from the root to this node."""
+        node, path_back = self, []
+        while node:
+            path_back.append(node)
+            node = node.parent
+        return list(reversed(path_back))
+
+    # We want for a queue of nodes in breadth_first_graph_search or
+    # astar_search to have no duplicated states, so we treat nodes
+    # with the same state as equal. [Problem: this may not be what you
+    # want in other contexts.]
+
+    def __eq__(self, other):
+        return isinstance(other, Node) and self.state == other.state
+
+    def __hash__(self):
+        return hash(self.state)
+
+def best_first_graph_search(problem, f):
+    """Search the nodes with the lowest f scores first.
+    You specify the function f(node) that you want to minimize; for example,
+    if f is a heuristic estimate to the goal, then we have greedy best
+    first search; if f is node.depth then we have breadth-first search.
+    There is a subtlety: the line "f = memoize(f, 'f')" means that the f
+    values will be cached on the nodes as they are computed. So after doing
+    a best first search you can examine the f values of the path returned."""
+    f = memoize(f, 'f')
+    node = Node(problem.initial)
+    frontier = PriorityQueue('min', f)
+    frontier.append(node)
+    explored = set()
+    counter = 0
+    while frontier:
+        node = frontier.pop()
+        if problem.goal_test(node.state):
+            print(counter)
+            return node
+        explored.add(node.state)
+        for child in node.expand(problem):
+            if child.state not in explored and child not in frontier:
+                frontier.append(child)
+                counter += 1
+            elif child in frontier:
+                if f(child) < frontier[child]:
+                    del frontier[child]
+                    frontier.append(child)
+                    counter -= 1
+    return None
+def astar_search(problem, h=None):
+    """A* search is best-first graph search with f(n) = g(n)+h(n).
+    You need to specify the h function when you call astar_search, or
+    else in your Problem subclass."""
+    h = memoize(h or problem.heuristic, 'h')
+    return best_first_graph_search(problem, lambda n: n.path_cost + h(n))
+
+tests = ['simple1.txt','simple2.txt','simple3.txt','simple4.txt','simple5.txt', 'simple7.txt','simple8.txt']
+N = []
+d = []
+for example in tests:
+    problem = ASARProblem()
+    in_file = open(example)
+    problem.load(in_file)
+    solution = astar_search(problem)
+    N.append(problem.nodesexplored)
+    d.append(len(problem.legs))
+    out_file = open('output.txt', 'w')
+    problem.save(out_file, solution.state)
+    out_file.close()
+
+print(N)
+N2 = [47, 97, 55, 108, 227, 205, 283]
+print(N2)
+print(d)
+branching_factor = []
+for i in range(len(N2)):
+    branching_factor.append(round(N2[i]**(1/d[i]), 2))
+print(branching_factor)
