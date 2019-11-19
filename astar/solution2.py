@@ -34,7 +34,7 @@ class ASARProblem(object):
         #self.airports, self.airplanes, self.aircraft_class, self.legs = self.load(filename)
 
         #Initial state: [[planeID, planepos, planeitme], profit, openlist of legs]
-
+        self.nodesexplored = 0
         self.goal = None
     def addtime(self, time1, time2):
         if time1 == '':
@@ -121,19 +121,19 @@ class ASARProblem(object):
         new_plane.append(action[1])
         new_plane.append(action[0][1])
         new_plane.append(ITR)
-        new_planes = []
+        new_planeS = []
         #this new plane status added with the other planes unchanged status
         for i in state[0]:
             if i[0] == new_plane[0]:
-                new_planes.append(tuple(new_plane))
+                new_planeS.append(tuple(new_plane))
             else:
-                new_planes.append(tuple(i))
+                new_planeS.append(tuple(i))
         #the new state is now assembled
         #[Planes_Status, Profit_So_far, Not_Yet_Flown_Legs, Schedule]
-        new_planes = tuple(new_planes)
+        new_planeS = tuple(new_planeS)
         L2 = tuple(L2)
         result_state = []
-        result_state.append(new_planes)
+        result_state.append(new_planeS)
         result_state.append(state[1]+added_profit)
         result_state.append(L2)
         SH = (*state[3], tuple([action[1],action[0],ini_time]))
@@ -145,6 +145,7 @@ class ASARProblem(object):
         state to self.goal or checks for state in self.goal if it is a
         list, as specified in the constructor. Override this method if
         checking against a single self.goal is not enough."""
+        self.nodesexplored += 1
         Goal_test = True
         if not state[2]:  # test if state Legs yet to be flown is empty
             pass
@@ -162,13 +163,14 @@ class ASARProblem(object):
             else:
                 pass
         for plane in state[0]:  # test if all the planes are in the same airport from where they started
-            if plane[1] != None:
-                for step in state[3]:
+            if plane[2] != '':
+                for step in state[-1]:
                     if step[0] == plane[0]:
                         plane_start = step[1][0]
                         break
-                #plane_start = next(i for i in state[3] if i[0] == plane[0])
-                #plane_end = next(i for i in state[0] if i[0] == plane[0])
+                # plane_start = next(i for i in state[3] if i[0] == plane[0])
+                # plane_end = next(i for i in state[0] if i[0] == plane[0])
+
                 if plane_start == plane[1]:
                     pass
                 else:
@@ -270,7 +272,6 @@ class ASARProblem(object):
             f.write('Infeasible')
 
         pass
-
 # ______________________________________________________________________________
 
 
@@ -349,18 +350,22 @@ def best_first_graph_search(problem, f):
     frontier = PriorityQueue('min', f)
     frontier.append(node)
     explored = set()
+    counter = 0
     while frontier:
         node = frontier.pop()
         if problem.goal_test(node.state):
+            print(counter)
             return node
         explored.add(node.state)
         for child in node.expand(problem):
             if child.state not in explored and child not in frontier:
                 frontier.append(child)
+                counter += 1
             elif child in frontier:
                 if f(child) < frontier[child]:
                     del frontier[child]
                     frontier.append(child)
+                    counter -= 1
     return None
 def astar_search(problem, h=None):
     """A* search is best-first graph search with f(n) = g(n)+h(n).
@@ -389,11 +394,25 @@ L = [[('LPPT', 'LPPR'), '0055', 'a320', 100, 'a330', 80],
 C = [['a320', '0045'],
      ['a330', '0120']]
 """
+tests = ['simple1.txt','simple2.txt','simple3.txt','simple4.txt','simple5.txt', 'simple7.txt','simple8.txt']
+N = []
+d = []
+for example in tests:
+    problem = ASARProblem()
+    in_file = open(example)
+    problem.load(in_file)
+    solution = astar_search(problem)
+    N.append(problem.nodesexplored)
+    d.append(len(problem.legs))
+    out_file = open('output.txt', 'w')
+    problem.save(out_file, solution.state)
+    out_file.close()
 
-problem = ASARProblem()
-in_file = open('simple5.txt')
-problem.load(in_file)
-solution = astar_search(problem)
-out_file = open('output.txt', 'w')
-problem.save(out_file, solution.state)
-out_file.close()
+print(N)
+N2 = [47, 97, 55, 108, 227, 205, 283]
+print(N2)
+print(d)
+branching_factor = []
+for i in range(len(N2)):
+    branching_factor.append(round(N2[i]**(1/d[i]), 2))
+print(branching_factor)
