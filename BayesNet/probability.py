@@ -8,7 +8,7 @@ from functools import reduce
 
 import numpy as np
 
-from agents import Agent
+#from agents import Agent
 from utils import (product, argmax, element_wise_product, matrix_multiplication, vector_to_diagonal, vector_add,
                    scalar_vector_product, inverse_matrix, weighted_sample_with_replacement, isclose, probability,
                    normalize, extend)
@@ -191,9 +191,7 @@ class BayesNet:
             self.variable_node(parent).children.append(node)
 
     def variable_node(self, var):
-        """Return the node for the variable named var.
-        >>> burglary.variable_node('Burglary').variable
-        'Burglary'"""
+        """Return the node for the variable named var."""
         for n in self.nodes:
             if n.variable == var:
                 return n
@@ -237,7 +235,7 @@ class DecisionNetwork(BayesNet):
         return u
 
 
-class InformationGatheringAgent(Agent):
+#class InformationGatheringAgent(Agent):
     """
     [Figure 16.9]
     A simple information gathering agent. The agent works by repeatedly selecting
@@ -317,10 +315,6 @@ class BayesNode:
           the first two are just conveniences.
         In all cases the probability of X being false is left implicit,
         since it follows from P(X=true).
-        >>> X = BayesNode('X', '', 0.2)
-        >>> Y = BayesNode('Y', 'P', {T: 0.2, F: 0.7})
-        >>> Z = BayesNode('Z', 'P Q',
-        ...    {(T, T): 0.2, (T, F): 0.3, (F, T): 0.5, (F, F): 0.7})
         """
         if isinstance(parents, str):
             parents = parents.split()
@@ -349,9 +343,7 @@ class BayesNode:
         P(X=value | parents=parent_values), where parent_values
         are the values of parents in event. (event must assign each
         parent a value.)
-        >>> bn = BayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
-        >>> bn.p(False, {'Burglary': False, 'Earthquake': True})
-        0.375"""
+        """
         assert isinstance(value, bool)
         ptrue = self.cpt[event_values(event, self.parents)]
         return ptrue if value else 1 - ptrue
@@ -418,12 +410,7 @@ def enumerate_all(variables, e, bn):
 
 
 def elimination_ask(X, e, bn):
-    """
-    [Figure 14.11]
-    Compute bn's P(X|e) by variable elimination.
-    >>> elimination_ask('Burglary', dict(JohnCalls=T, MaryCalls=T), burglary
-    ...  ).show_approx()
-    'False: 0.716, True: 0.284'"""
+
     assert X not in e, "Query variable must be distinct from evidence"
     factors = []
     for var in reversed(bn.variables):

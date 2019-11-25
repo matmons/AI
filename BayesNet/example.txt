@@ -1,0 +1,8 @@
+R americas europe asia africa ancient contemporary hall
+C americas,europe europe,asia asia,africa africa,ancient asia,ancient ancient,contemporary contemporary,americas hall,americas hall,contemporary
+S s1:hall:0.9:0.01 s2:ancient:0.7:0.1 s3:europe:0.8:0.05
+P 0.7
+M s1:F s2:F
+M s1:F s3:F
+M s1:F s2:T
+M s2:T s3:T
