@@ -47,7 +47,7 @@ class Problem:
                 self.measurements[measurement_counter] = [i.split(":") for i in line.strip().split()[1:]]
 
         self.N = len(self.room_names)
-        self.M = len(self.measurements[1])
+#        self.M = len(self.measurements[1])
         self.T = len(self.measurements)
 
         self.evidence = {}
@@ -63,7 +63,7 @@ class Problem:
         for i, r in enumerate(self.room_names):
             X = r + "1"
             parents = ""
-            p = self.P # The problem says "no prior information"
+            p = 0.2 # The problem says "no prior information" ??p = self.P??
             nodes.append((X, parents, p))
 
         for t in range(1, self.T):
@@ -130,7 +130,7 @@ def solver(input_file):
     return Problem(input_file).solve()
 
 def main():
-    with open("P4.txt", "r") as f:
+    with open("P2.txt", "r") as f:
         print(solver(f))
 
 if __name__ == "__main__":
