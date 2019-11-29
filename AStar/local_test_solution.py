@@ -5,7 +5,7 @@ Pedro Pinto, Mons Erling Mathiesen, Amanda K. Jansen
 
 Problem class, Node class, astar_search and best_first_graph_search from https://github.com/aimacode/aima-python/blob/master/search.py
 """
-
+import time
 from utils import (
     memoize, PriorityQueue
 )
@@ -347,7 +347,6 @@ def best_first_graph_search(problem, f):
     while frontier:
         node = frontier.pop()
         if problem.goal_test(node.state):
-            print(counter)
             return node
         explored.add(node.state)
         for child in node.expand(problem):
@@ -367,25 +366,18 @@ def astar_search(problem, h=None):
     h = memoize(h or problem.heuristic, 'h')
     return best_first_graph_search(problem, lambda n: n.path_cost + h(n))
 
-tests = ['simple1.txt','simple2.txt','simple3.txt','simple4.txt','simple5.txt', 'simple7.txt','simple8.txt']
-N = []
-d = []
-for example in tests:
+
+
+def main():
     problem = ASARProblem()
-    in_file = open(example)
+    in_file = open('simple1.txt')
     problem.load(in_file)
     solution = astar_search(problem)
-    N.append(problem.nodesexplored)
-    d.append(len(problem.legs))
     out_file = open('output.txt', 'w')
     problem.save(out_file, solution.state)
     out_file.close()
 
-print(N)
-N2 = [47, 97, 55, 108, 227, 205, 283]
-print(N2)
-print(d)
-branching_factor = []
-for i in range(len(N2)):
-    branching_factor.append(round(N2[i]**(1/d[i]), 2))
-print(branching_factor)
+if __name__ == "__main__":
+    start_time = time.time()
+    main()
+    print("--- %s seconds ---" % (time.time() - start_time))
