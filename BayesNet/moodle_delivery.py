@@ -62,7 +62,7 @@ class Problem:
         for i, r in enumerate(self.room_names):
             X = r + "1"
             parents = ""
-            p = 0.5  # The problem says "no prior information
+            p = 0.5  # The problem says "no prior information"
             nodes.append((X, parents, p))
 
         for t in range(1, self.T):

@@ -47,7 +47,6 @@ class Problem:
                 self.measurements[measurement_counter] = [i.split(":") for i in line.strip().split()[1:]]
 
         self.N = len(self.room_names)
-#        self.M = len(self.measurements[1])
         self.T = len(self.measurements)
 
         self.evidence = {}
@@ -63,7 +62,7 @@ class Problem:
         for i, r in enumerate(self.room_names):
             X = r + "1"
             parents = ""
-            p = 0.5 # The problem says "no prior information" ??p = self.P??
+            p = 0.5 # The problem says "no prior information"
             nodes.append((X, parents, p))
 
         for t in range(1, self.T):
